@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: metlo-frontend
+  name: metlo-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: metlo-frontend
+  template:
+    metadata:
+      labels:
+        app: metlo-frontend
+    spec:
+      containers:
+        - env:
+            - name: BACKEND_URL
+              value: http://backend:8080
+          image: metlo/frontend:latest
+          name: metlo-frontend
+          ports:
+            - containerPort: 3000
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: metlo-frontend
+  name: metlo-frontend
+spec:
+  ports:
+    - name: "8000"
+      port: 8000
+      targetPort: 3000
+  selector:
+    app: metlo-frontend
+status:
+  loadBalancer: {}

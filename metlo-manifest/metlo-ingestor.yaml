@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: metlo-ingestor
+  name: metlo-ingestor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: metlo-ingestor
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: metlo-ingestor
+    spec:
+      containers:
+        - args:
+            - yarn
+            - start-collector
+          env:
+            - name: DB_URL
+              value: postgres://postgres:postgres@metlo-database:5432/metlo_api_security
+            - name: ENCRYPTION_KEY
+              value: eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+            - name: RUN_MIGRATION
+              value: "true"
+          image: metlo/backend:latest
+          name: metlo-ingestor
+          ports:
+            - containerPort: 8081
+          volumeMounts:
+            - mountPath: /usr/src/app/backend/metlo-config.yaml
+              name: metlo-ingestor-claim
+      restartPolicy: Always
+      volumes:
+        - name: metlo-ingestor-claim
+          persistentVolumeClaim:
+            claimName: metlo-ingestor-claim
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: metlo-ingestor
+  name: metlo-ingestor
+spec:
+  ports:
+    - name: "8081"
+      port: 8081
+      targetPort: 8081
+  selector:
+    app: metlo-ingestor
+status:
+  loadBalancer: {}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app: metlo-ingestor-claim
+  name: metlo-ingestor-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi

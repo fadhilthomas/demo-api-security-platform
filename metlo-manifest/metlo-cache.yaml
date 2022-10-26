@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: metlo-cache
+  name: metlo-cache
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: metlo-cache
+  template:
+    metadata:
+      labels:
+        app: metlo-cache
+    spec:
+      containers:
+        - args:
+            - redis-server
+            - --save
+            - "20"
+            - "1"
+            - --loglevel
+            - warning
+            - --requirepass
+            - eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+          image: redis:7.0.4
+          name: metlo-cache
+          ports:
+            - containerPort: 6379
+          volumeMounts:
+            - mountPath: /data
+              name: metlo-cache
+      restartPolicy: Always
+      volumes:
+        - name: metlo-cache
+          persistentVolumeClaim:
+            claimName: metlo-cache
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: metlo-cache
+  name: metlo-cache
+spec:
+  ports:
+    - name: "6379"
+      port: 6379
+      targetPort: 6379
+  selector:
+    app: metlo-cache
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app: metlo-cache
+  name: metlo-cache
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi

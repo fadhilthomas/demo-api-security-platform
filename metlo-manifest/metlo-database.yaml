@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metlo-database
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: metlo-database
+  template:
+    metadata:
+      labels:
+        app: metlo-database
+    spec:
+      containers:
+        - env:
+            - name: POSTGRES_PASSWORD
+              value: postgres
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_DB
+              value: metlo_api_security
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          image: postgres:15
+          name: metlo-database
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: metlo-database
+      restartPolicy: Always
+      volumes:
+        - name: metlo-database
+          persistentVolumeClaim:
+            claimName: metlo-database
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: metlo-database
+  name: metlo-database
+spec:
+  ports:
+    - name: "5432"
+      port: 5432
+      targetPort: 5432
+  selector:
+    app: metlo-database
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app: metlo-database
+  name: metlo-database
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 200Mi

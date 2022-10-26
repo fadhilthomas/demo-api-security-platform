@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: metlo-job
+  name: metlo-job
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: metlo-job
+  template:
+    metadata:
+      labels:
+        app: metlo-job
+    spec:
+      containers:
+        - env:
+            - name: DB_URL
+              value: postgres://postgres:postgres@metlo-database:5432/metlo_api_security
+            - name: DISABLE_LOGGING_STATS
+          image: metlo/jobrunner:latest
+          name: metlo-jobs
+      restartPolicy: Always

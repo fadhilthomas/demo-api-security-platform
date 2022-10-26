@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: metlo-backend
+  name: metlo-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: metlo-backend
+  template:
+    metadata:
+      labels:
+        app: metlo-backend
+    spec:
+      containers:
+        - env:
+            - name: BACKEND_URL
+              value: http://backend:8080
+            - name: DB_URL
+              value: postgres://postgres:postgres@metlo-database:5432/metlo_api_security
+            - name: ENCRYPTION_KEY
+              value: eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+            - name: EXPRESS_SECRET
+              value: eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+            - name: REDIS_URL
+              value: redis://:eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81@metlo-cache:6379
+            - name: SANDBOX_MODE
+            - name: SESSION_SECRET
+              value: eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+          image: metlo/backend:latest
+          name: metlo-backend
+          ports:
+            - containerPort: 8080
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: metlo-backend
+  name: backend
+spec:
+  ports:
+    - name: "8080"
+      port: 8080
+      targetPort: 8080
+  selector:
+    app: metlo-backend
