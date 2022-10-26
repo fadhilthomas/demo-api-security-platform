@@ -16,8 +16,6 @@ spec:
     spec:
       containers:
         - env:
-            - name: BACKEND_URL
-              value: http://backend:8080
             - name: DB_URL
               value: postgres://postgres:postgres@metlo-database:5432/metlo_api_security
             - name: ENCRYPTION_KEY
